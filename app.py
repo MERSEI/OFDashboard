@@ -1,3 +1,4 @@
+from __future__ import annotations
 import streamlit as st
 from datetime import datetime, timedelta
 import hashlib
@@ -291,13 +292,13 @@ def main():
     
     # Выбор аккаунта
     available_accounts = user_data.get("accounts", [])
+    account = st.session_state.get("current_account", "AI_Girl_1")
     if available_accounts:
         account = st.sidebar.selectbox(
             "🎭 Аккаунт модели",
             available_accounts,
             key="account_selector"
         )
-        st.session_state.setdefault("current_account", account)
         st.session_state["current_account"] = account
     else:
         st.sidebar.warning("⚠️ У вас нет доступных аккаунтов")
@@ -332,11 +333,11 @@ def main():
                 help=f"Недоступно на вашем тарифе"
             )
     
-    # Кнопка выхода
-    render_logout_button()
-    
     st.sidebar.markdown("---")
     st.sidebar.caption("v0.2 · Subscription MVP")
+
+    # Кнопка выхода
+    render_logout_button()
     
     # Отображение контента страницы
     current_page = st.session_state.get("current_page", "chats_page")
@@ -351,14 +352,12 @@ def main():
     
     elif current_page == "content_page":
         if check_feature_access("content"):
-            st.header("🎥 Генерация контента")
             render_content_page(account)
         else:
             render_upgrade_notice("Генерация контента")
-    
+
     elif current_page == "analytics_page":
         if check_feature_access("analytics"):
-            st.header("📊 Аналитика")
             render_analytics_page(account)
         else:
             render_upgrade_notice("Аналитика")

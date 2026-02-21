@@ -8,7 +8,6 @@ from core.ai import (
 
 
 def render_content_page(account: str):
-    st.set_page_config(layout="wide", page_title="Content Generator")
     st.header(f"🎥 Контент: {account}")
     
     # Добавляем стиль для лучшей презентации
