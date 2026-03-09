@@ -315,23 +315,13 @@ def main():
     }
     
     for page_name, (feature, page_key) in pages.items():
-        has_access = check_feature_access(feature)
-        
-        if has_access:
-            if st.sidebar.button(
-                page_name,
-                use_container_width=True,
-                type="primary" if st.session_state.get("current_page") == page_key else "secondary"
-            ):
-                st.session_state["current_page"] = page_key
-                st.rerun()
-        else:
-            st.sidebar.button(
-                f"{page_name} 🔒",
-                use_container_width=True,
-                disabled=True,
-                help=f"Недоступно на вашем тарифе"
-            )
+        if st.sidebar.button(
+            page_name,
+            use_container_width=True,
+            type="primary" if st.session_state.get("current_page") == page_key else "secondary"
+        ):
+            st.session_state["current_page"] = page_key
+            st.rerun()
     
     st.sidebar.markdown("---")
     st.sidebar.caption("v0.2 · Subscription MVP")
