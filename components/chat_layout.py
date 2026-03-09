@@ -6,7 +6,100 @@ import time
 
 
 
+def _inject_chat_css() -> None:
+    """Вставляет CSS для чат-страницы один раз."""
+    st.markdown("""
+        <style>
+        /* === Fan list === */
+        .fan-card {
+            padding: 12px;
+            margin: 6px 0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+        .fan-card:hover {
+            transform: translateX(4px);
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        .fan-card-vip  { border-left: 4px solid #FFD700; }
+        .fan-card-buyer{ border-left: 4px solid #4CAF50; }
+        .fan-card-free { border-left: 4px solid #9E9E9E; }
+        .fan-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+        .badge-vip  { background: #FFD700; color: #000; }
+        .badge-buyer{ background: #4CAF50; color: #fff; }
+        .badge-free { background: #9E9E9E; color: #fff; }
+        /* === Chat bubbles === */
+        .chat-history {
+            max-height: 550px;
+            overflow-y: auto;
+            padding: 16px;
+            border-radius: 12px;
+            background: linear-gradient(180deg, rgba(17,17,17,0.95) 0%, rgba(30,30,30,0.95) 100%);
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.3);
+        }
+        .chat-history::-webkit-scrollbar { width: 6px; }
+        .chat-history::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05); border-radius: 10px;
+        }
+        .chat-history::-webkit-scrollbar-thumb {
+            background: rgba(102,126,234,0.5); border-radius: 10px;
+        }
+        .chat-history::-webkit-scrollbar-thumb:hover {
+            background: rgba(102,126,234,0.7);
+        }
+        .msg-user {
+            text-align: right; margin-bottom: 12px;
+            animation: slideInRight 0.3s ease;
+        }
+        .msg-bubble-user {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            padding: 10px 14px;
+            border-radius: 18px 18px 4px 18px;
+            font-size: 14px; max-width: 75%;
+            word-wrap: break-word;
+            box-shadow: 0 2px 8px rgba(102,126,234,0.3);
+        }
+        .msg-assistant {
+            text-align: left; margin-bottom: 12px;
+            animation: slideInLeft 0.3s ease;
+        }
+        .msg-bubble-assistant {
+            display: inline-block;
+            background: rgba(66,66,66,0.8);
+            color: #fff;
+            padding: 10px 14px;
+            border-radius: 18px 18px 18px 4px;
+            font-size: 14px; max-width: 75%;
+            word-wrap: break-word;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        .msg-time { font-size: 10px; color: #888; margin-top: 4px; font-style: italic; }
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(20px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-20px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
+
 def render_chats_page(account: str) -> None:
+    _inject_chat_css()
     st.header(f"💬 Чаты: {account}")
 
     # Инициализация выбранного фана
@@ -129,99 +222,28 @@ def render_chats_page(account: str) -> None:
 
 
 def _render_fans_list(filtered_fans) -> None:
-    """Отрисовка списка фанов с улучшенным дизайном"""
-    st.markdown("""
-        <style>
-        .fan-card {
-            padding: 12px;
-            margin: 6px 0;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: 2px solid transparent;
-        }
-        .fan-card:hover {
-            transform: translateX(4px);
-            background-color: rgba(255, 255, 255, 0.05);
-        }
-        .fan-card-selected {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: 2px solid #764ba2;
-            box-shadow: 0 4px 12px rgba(118, 75, 162, 0.3);
-        }
-        .fan-card-vip {
-            border-left: 4px solid #FFD700;
-        }
-        .fan-card-buyer {
-            border-left: 4px solid #4CAF50;
-        }
-        .fan-card-free {
-            border-left: 4px solid #9E9E9E;
-        }
-        .fan-name {
-            font-weight: 600;
-            font-size: 14px;
-            margin-bottom: 4px;
-        }
-        .fan-revenue {
-            font-size: 12px;
-            color: #4CAF50;
-            font-weight: 500;
-        }
-        .fan-badge {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 10px;
-            font-weight: 600;
-            margin-right: 6px;
-        }
-        .badge-vip { background: #FFD700; color: #000; }
-        .badge-buyer { background: #4CAF50; color: #fff; }
-        .badge-free { background: #9E9E9E; color: #fff; }
-        </style>
-    """, unsafe_allow_html=True)
-    
+    """Отрисовка списка фанов — одна кнопка на фана, без дублирующей карточки."""
+    segment_icon = {"VIP": "💎", "Buyer": "💰", "Free": "👤"}
+    segment_accent = {"VIP": "#FFD700", "Buyer": "#4CAF50", "Free": "#9E9E9E"}
+
     for _, row in filtered_fans.iterrows():
         is_selected = row["id"] == st.session_state["selected_fan_id"]
-        
-        # Иконки и стили
-        segment_icon = {"VIP": "💎", "Buyer": "💰", "Free": "👤"}
-        badge_class = {"VIP": "badge-vip", "Buyer": "badge-buyer", "Free": "badge-free"}
-        card_class = {"VIP": "fan-card-vip", "Buyer": "fan-card-buyer", "Free": "fan-card-free"}
         segment = row["segment"]
-        
-        new_indicator = "🔴 " if row["has_new"] else ""
-        
-        # Кнопка для каждого фана с применением стилей
-        button_label = f"{segment_icon[segment]} {new_indicator}{row['name']} · ${row['revenue']}"
-        
-        # Применяем стили карточки через markdown
-        st.markdown(f"""
-            <div class="{card_class[segment]}" style="
-                background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
-                padding: 12px;
-                border-radius: 10px;
-                margin: 6px 0;
-                border: 2px solid {'#764ba2' if is_selected else 'transparent'};
-                {'box-shadow: 0 4px 12px rgba(118, 75, 162, 0.3);' if is_selected else ''}
-            ">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div style="font-weight: 600;">
-                        {button_label}
-                    </div>
-                    <div class="{badge_class[segment]} fan-badge" style="background: {{'#FFD700' if segment == 'VIP' else '#4CAF50' if segment == 'Buyer' else '#9E9E9E'}}; color: {'#000' if segment == 'VIP' else '#fff'}">
-                        {segment}
-                    </div>
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
-        
+        new_dot = "🔴 " if row["has_new"] else ""
+        accent = segment_accent[segment]
+
+        # Цветная полоска слева через inline-style перед кнопкой
+        st.markdown(
+            f'<div style="border-left: 4px solid {accent}; border-radius: 4px; margin-bottom: 2px;"></div>',
+            unsafe_allow_html=True,
+        )
+
+        label = f"{segment_icon[segment]} {new_dot}{row['name']}  ·  ${row['revenue']}"
         if st.button(
-            "Выбрать",
+            label,
             key=f"fan_{row['id']}",
             use_container_width=True,
-            type="primary" if is_selected else "secondary"
+            type="primary" if is_selected else "secondary",
         ):
             st.session_state["selected_fan_id"] = row["id"]
             st.rerun()
@@ -255,94 +277,7 @@ def _render_fan_info_card(fan) -> None:
 
 
 def _render_chat_history(history) -> None:
-    """Отрисовка истории чата с улучшенным дизайном"""
-    st.markdown("""
-        <style>
-        .chat-history {
-            max-height: 550px;
-            overflow-y: auto;
-            padding: 16px;
-            border-radius: 12px;
-            background: linear-gradient(180deg, rgba(17, 17, 17, 0.95) 0%, rgba(30, 30, 30, 0.95) 100%);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3);
-        }
-        .chat-history::-webkit-scrollbar {
-            width: 6px;
-        }
-        .chat-history::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-        }
-        .chat-history::-webkit-scrollbar-thumb {
-            background: rgba(102, 126, 234, 0.5);
-            border-radius: 10px;
-        }
-        .chat-history::-webkit-scrollbar-thumb:hover {
-            background: rgba(102, 126, 234, 0.7);
-        }
-        .msg-user {
-            text-align: right;
-            margin-bottom: 12px;
-            animation: slideInRight 0.3s ease;
-        }
-        .msg-bubble-user {
-            display: inline-block;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #fff;
-            padding: 10px 14px;
-            border-radius: 18px 18px 4px 18px;
-            font-size: 14px;
-            max-width: 75%;
-            word-wrap: break-word;
-            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
-        }
-        .msg-assistant {
-            text-align: left;
-            margin-bottom: 12px;
-            animation: slideInLeft 0.3s ease;
-        }
-        .msg-bubble-assistant {
-            display: inline-block;
-            background: rgba(66, 66, 66, 0.8);
-            color: #fff;
-            padding: 10px 14px;
-            border-radius: 18px 18px 18px 4px;
-            font-size: 14px;
-            max-width: 75%;
-            word-wrap: break-word;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-        }
-        .msg-time {
-            font-size: 10px;
-            color: #888;
-            margin-top: 4px;
-            font-style: italic;
-        }
-        @keyframes slideInRight {
-            from {
-                opacity: 0;
-                transform: translateX(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-        @keyframes slideInLeft {
-            from {
-                opacity: 0;
-                transform: translateX(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-        </style>
-    """, unsafe_allow_html=True)
-
+    """Отрисовка истории чата (CSS уже инжектирован через _inject_chat_css)."""
     st.markdown('<div class="chat-history">', unsafe_allow_html=True)
 
     if not history:

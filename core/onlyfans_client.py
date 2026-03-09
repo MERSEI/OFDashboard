@@ -1,5 +1,5 @@
 # core/onlyfans_client.py
-
+from __future__ import annotations
 from typing import List, Dict, Any
 import pandas as pd
 

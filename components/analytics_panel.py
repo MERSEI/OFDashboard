@@ -6,7 +6,6 @@ from core.data import get_analytics_data
 
 
 def render_analytics_page(account: str):
-    st.set_page_config(layout="wide", page_title="Analytics")
     st.header(f"📊 Аналитика: {account}")
     
     # Добавляем стиль для лучшей презентации
@@ -58,7 +57,7 @@ def render_analytics_page(account: str):
             border-radius: 12px;
             border: 1px solid rgba(255, 255, 255, 0.1);
             text-align: center;
-            height: 200px;
+            min-height: 120px;
         }
         .metric-value {
             font-size: 32px;
